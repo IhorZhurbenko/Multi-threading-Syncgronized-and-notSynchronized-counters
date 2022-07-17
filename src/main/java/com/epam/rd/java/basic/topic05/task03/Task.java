@@ -2,6 +2,7 @@ package com.epam.rd.java.basic.topic05.task03;
 
 public class Task {
 
+
     private final int numberOfThreads;
     private final int numberOfIterations;
     private final int pause;
