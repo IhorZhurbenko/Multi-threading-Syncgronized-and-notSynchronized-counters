@@ -2,33 +2,81 @@ package com.epam.rd.java.basic.topic05.task03;
 
 public class Task {
 
-	private int numberOfThreads;
+    private final int numberOfThreads;
+    private final int numberOfIterations;
+    private final int pause;
+    private int c1;
+    private int c2;
+    private final Thread[] threads;
 
-	private int numberOfIterations;
+    public Task(int numberOfThreads, int numberOfIterations, int pause) {
+        this.threads = new Thread[numberOfThreads];
+        this.numberOfThreads = numberOfThreads;
+        this.numberOfIterations = numberOfIterations;
+        this.pause = pause;
+    }
 
-	private int pause;
+    public void compare() {
+        clearCounters();
+        for (int i = 0; i < numberOfThreads; i++) {
+            Thread t2 = new Thread(() -> {
+                for (int j = 0; j < numberOfIterations; j++) {
+                    threadJob();
+                }
+            });
+            threads[i] = t2;
+            t2.start();
+        }
+        joinThreads();
+    }
 
-	private int c1;
+    public void compareSync() {
+        clearCounters();
+        for (int i = 0; i < numberOfThreads; i++) {
+            Thread t2 = new Thread(() -> {
+                for (int j = 0; j < numberOfIterations; j++) {
+                    synchronized (this) {
+                        threadJob();
+                    }
+                }
+            });
+            threads[i] = t2;
+            t2.start();
+        }
+        joinThreads();
+    }
 
-	private int c2;
+    private void threadJob() {
+        boolean a = c1 == c2;
+        System.out.println(a + " " + c1 + " " + c2);
+        c1++;
+        try {
+            Thread.sleep(pause);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        c2++;
+    }
 
-	public Task(int numberOfThreads, int numberOfIterations, int pause) {
-		
-	}
+    private void joinThreads() {
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
 
-	public void compare() {
-		
-	}
+    private void clearCounters() {
+        c1 = 0;
+        c2 = 0;
+    }
 
-	public void compareSync() {
-
-	}
-	
-	public static void main(String[] args) {
-		Task t = new Task(2, 5, 10);
-		t.compare();
-		System.out.println("~~~");
-		t.compareSync();
-	}
-
+    public static void main(String[] args) {
+        Task t = new Task(2, 5, 10);
+        t.compare();
+        System.out.println("~~~");
+        t.compareSync();
+    }
 }
